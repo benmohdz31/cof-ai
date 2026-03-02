@@ -10,6 +10,10 @@ export default async function handler(req, res) {
 
   try {
     const { messages, system } = req.body;
+
+    // Force JSON response in system prompt
+    const jsonSystem = system + "\n\nIMPORTANT: Réponds UNIQUEMENT avec du JSON valide, aucun texte avant ou après.";
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -19,12 +23,14 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         max_tokens: 1000,
+        response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: system },
+          { role: "system", content: jsonSystem },
           ...messages
         ],
       }),
     });
+
     const text = await response.text();
     let data;
     try { data = JSON.parse(text); }
