@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>COF.AI — Prompt Parfait</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0A0A0F;font-family:'DM Sans',sans-serif;color:#E8E8F0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:36px 20px}
+    ::placeholder{color:#3A3A4A}
+    textarea{outline:none;font-family:'DM Sans',sans-serif}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes micPulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @keyframes wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+    .fade-up{animation:fadeUp .4s ease forwards}
+    .spinner{width:16px;height:16px;border:2px solid #333;border-top-color:#FF6B35;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+
+    #app{width:100%;max-width:580px;display:flex;flex-direction:column;align-items:center}
+    .badge{display:inline-block;font-size:10px;letter-spacing:.2em;color:#FF6B35;border:1px solid #FF6B3544;border-radius:4px;padding:4px 10px;margin-bottom:12px;font-family:'Syne',sans-serif}
+    h1{font-family:'Syne',sans-serif;font-size:50px;font-weight:800;letter-spacing:-2px;color:#F0F0FF;line-height:1;margin-bottom:8px}
+    h1 span{color:#FF6B35}
+    .subtitle{font-size:14px;color:#555;font-weight:300}
+    header{text-align:center;margin-bottom:24px;width:100%}
+    .voice-toggle{margin-top:12px;background:#FF6B3518;border:1px solid #FF6B3555;color:#FF6B35;border-radius:20px;padding:5px 16px;font-size:11px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;letter-spacing:.1em}
+    .voice-toggle.off{background:#1A1A2E;border-color:#2A2A3A;color:#555}
+
+    .speaking-bar{display:flex;align-items:center;gap:3px;height:24px;margin-bottom:14px}
+    .speaking-bar .bar{width:3px;height:18px;background:#FF6B35;border-radius:2px}
+    .speaking-bar span{font-size:10px;color:#FF6B35;margin-left:8px;font-family:'Syne',sans-serif;letter-spacing:.12em}
+
+    .steps{display:flex;gap:28px;margin-bottom:22px;align-items:center}
+    .step-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .step-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .3s;border:2px solid #333;background:#1A1A2E;color:#555;font-family:'Syne',sans-serif}
+    .step-label{font-size:10px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.06em;color:#444;transition:color .3s}
+
+    .card{width:100%;background:#12121C;border:1px solid #1E1E30;border-radius:16px;padding:28px}
+    .card-label{font-size:10px;letter-spacing:.2em;color:#444;margin-bottom:10px;font-family:'Syne',sans-serif;font-weight:600}
+    .input-row{display:flex;gap:10px;align-items:flex-start}
+    textarea.field{background:#0A0A14;border:1px solid #252535;border-radius:10px;color:#E8E8F0;font-size:15px;font-weight:300;padding:12px 14px;resize:vertical;min-height:90px;line-height:1.6;width:100%;flex:1}
+    .mic-btn{width:44px;height:44px;border-radius:50%;border:2px solid #333;background:#0A0A14;color:#555;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .btn{width:100%;margin-top:14px;padding:13px 20px;background:#FF6B35;color:#FFF;border:none;border-radius:10px;font-size:15px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.02em}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn.secondary{background:#1A1A2E;color:#666;margin-top:12px}
+    .err{color:#FF4466;font-size:12px;margin-top:8px}
+
+    .step-badge{display:inline-block;font-size:11px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:6px;border:1px solid;margin-bottom:10px}
+    .step-desc{color:#555;font-size:13px;margin-bottom:14px;font-style:italic}
+    .q-box{background:#0A0A14;border-radius:10px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px}
+    .q-item{display:flex;gap:8px;align-items:flex-start}
+    .q-num{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;min-width:18px;padding-top:1px}
+    .q-text{font-size:14px;line-height:1.5;color:#CCC;flex:1}
+    .reread-btn{background:none;border:none;color:#444;cursor:pointer;font-size:11px;padding:2px 4px;margin-top:2px}
+
+    .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .result-badge{font-size:11px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.15em;color:#FFD700}
+    .btn-group{display:flex;gap:8px}
+    .icon-btn{background:#FF6B3518;border:1px solid #FF6B3544;color:#FF6B35;border-radius:6px;padding:6px 10px;font-size:14px;cursor:pointer}
+    .copy-btn{border:1px solid #FFD70044;border-radius:6px;padding:6px 14px;font-size:12px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;background:#FFD70022;color:#FFD700}
+    .copy-btn.copied{background:#00E5C022;color:#00E5C0;border-color:#00E5C044}
+    .prompt-box{background:#0A0A14;border:1px solid #FFD70022;border-radius:10px;padding:18px;max-height:300px;overflow-y:auto}
+    .prompt-text{font-size:14px;line-height:1.7;color:#DDD;white-space:pre-wrap;font-weight:300}
+
+    footer{margin-top:28px;font-size:11px;color:#2A2A3A;letter-spacing:.05em}
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="badge">PROMPT ENGINEER</div>
+    <h1>COF<span>.</span>AI</h1>
+    <p class="subtitle">Transforme n'importe quelle idée en prompt parfait</p>
+    <button class="voice-toggle" id="voiceToggle" onclick="toggleVoice()">🔊 VOIX ON</button>
+  </header>
+
+  <div class="speaking-bar hidden" id="speakingBar">
+    <div class="bar" style="animation:wave .6s ease-in-out 0s infinite"></div>
+    <div class="bar" style="animation:wave .6s ease-in-out .1s infinite"></div>
+    <div class="bar" style="animation:wave .6s ease-in-out .2s infinite"></div>
+    <div class="bar" style="animation:wave .6s ease-in-out .3s infinite"></div>
+    <div class="bar" style="animation:wave .6s ease-in-out .4s infinite"></div>
+    <span>EN TRAIN DE PARLER…</span>
+  </div>
+
+  <div class="steps hidden" id="stepBar">
+    <div class="step-item">
+      <div class="step-dot" id="stepDot0">1</div>
+      <span class="step-label" id="stepLabel0">C — Contexte</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot" id="stepDot1">2</div>
+      <span class="step-label" id="stepLabel1">O — Objectif</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot" id="stepDot2">3</div>
+      <span class="step-label" id="stepLabel2">F — Format</span>
+    </div>
+  </div>
+
+  <div class="card fade-up">
+    <!-- INPUT -->
+    <div id="phaseInput">
+      <div class="card-label">TON IDÉE</div>
+      <div class="input-row">
+        <textarea class="field" id="ideaInput" placeholder="Ex: écrire un email de prospection pour mes clients..." rows="3"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();startFlow()}"></textarea>
+        <button class="mic-btn" id="micIdea" onclick="toggleMic('ideaInput','micIdea','#FF6B35')" title="🎙 Parler">🎙</button>
+      </div>
+      <p class="err hidden" id="errInput"></p>
+      <button class="btn" id="btnStart" onclick="startFlow()">Générer mon prompt parfait →</button>
+    </div>
+
+    <!-- QUESTIONS -->
+    <div id="phaseQuestions" class="hidden fade-up">
+      <div class="step-badge" id="stepBadge"></div>
+      <p class="step-desc" id="stepDesc"></p>
+      <div class="q-box" id="qBox"></div>
+      <div class="input-row">
+        <textarea class="field" id="answerInput" placeholder="Ta réponse… (ou utilise le micro 🎙)" style="min-height:80px"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitAnswer()}"></textarea>
+        <button class="mic-btn" id="micAnswer" onclick="toggleMic('answerInput','micAnswer',currentStepColor())" title="🎙 Parler">🎙</button>
+      </div>
+      <p class="err hidden" id="errQ"></p>
+      <button class="btn" id="btnNext" onclick="submitAnswer()">Continuer →</button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="phaseResult" class="hidden fade-up">
+      <div class="result-header">
+        <span class="result-badge">✨ PROMPT PARFAIT</span>
+        <div class="btn-group">
+          <button class="icon-btn" onclick="readPrompt()" title="Lire à voix haute">🔊</button>
+          <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copier</button>
+        </div>
+      </div>
+      <div class="prompt-box"><p class="prompt-text" id="promptText"></p></div>
+      <button class="btn secondary" onclick="reset()">← Nouvelle idée</button>
+    </div>
+  </div>
+
+  <footer>Basé sur la méthode COF de Mehdi • Propulsé par Claude AI</footer>
+</div>
+
+<script>
+const STEPS = ["contexte","objectif","format"];
+const STEP_CONFIG = {
+  contexte:{label:"C — Contexte",color:"#FF6B35",desc:"Qui tu es, ta situation, ton domaine"},
+  objectif:{label:"O — Objectif",color:"#FFD700",desc:"Ce que tu veux exactement, dans le moindre détail"},
+  format:{label:"F — Format",color:"#00E5C0",desc:"Comment tu veux la réponse"},
+};
+
+let state = { idea:"", currentStep:0, questions:[], allQA:[], voiceEnabled:true, listening:{} };
+
+// ── Voice output ──────────────────────────────────
+function toggleVoice(){
+  state.voiceEnabled = !state.voiceEnabled;
+  const btn = document.getElementById("voiceToggle");
+  btn.textContent = state.voiceEnabled?"🔊 VOIX ON":"🔇 VOIX OFF";
+  btn.className = "voice-toggle"+(state.voiceEnabled?"":" off");
+  if(!state.voiceEnabled) window.speechSynthesis?.cancel();
+}
+function sayText(text, cb){
+  if(!state.voiceEnabled||!window.speechSynthesis){cb?.();return;}
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang="fr-FR"; u.rate=1.05;
+  const fr = window.speechSynthesis.getVoices().find(v=>v.lang.startsWith("fr"));
+  if(fr) u.voice=fr;
+  document.getElementById("speakingBar").classList.remove("hidden");
+  u.onend=()=>{ document.getElementById("speakingBar").classList.add("hidden"); cb?.(); };
+  window.speechSynthesis.speak(u);
+}
+
+// ── Mic input ─────────────────────────────────────
+function toggleMic(fieldId, btnId, color){
+  const btn = document.getElementById(btnId);
+  if(state.listening[btnId]){ state._rec?.stop(); return; }
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ alert("Reconnaissance vocale : utilise Chrome."); return; }
+  const rec = new SR();
+  rec.lang="fr-FR"; rec.interimResults=false;
+  rec.onstart=()=>{ state.listening[btnId]=true; state._rec=rec; btn.textContent="⏹"; btn.style.cssText=`border-color:${color};background:${color}22;color:${color};box-shadow:0 0 14px ${color}55`; };
+  rec.onend=()=>{ state.listening[btnId]=false; btn.textContent="🎙"; btn.style.cssText=""; };
+  rec.onerror=()=>{ state.listening[btnId]=false; btn.textContent="🎙"; btn.style.cssText=""; };
+  rec.onresult=(e)=>{ const t=e.results[0][0].transcript; const f=document.getElementById(fieldId); f.value=f.value?f.value+" "+t:t; };
+  state._rec=rec; rec.start();
+}
+
+// ── API call via Vercel serverless ────────────────
+async function callClaude(messages, system){
+  const r = await fetch("/api/claude",{
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({messages, system})
+  });
+  const d = await r.json();
+  if(d.error) throw new Error(d.error);
+  return d.content.map(b=>b.text||"").join("");
+}
+
+// ── App flow ──────────────────────────────────────
+async function startFlow(){
+  const idea = document.getElementById("ideaInput").value.trim();
+  if(!idea) return;
+  state.idea=idea; state.allQA=[]; state.currentStep=0;
+  setLoading("btnStart",true); hideErr("errInput");
+  try{
+    const text = await callClaude(
+      [{role:"user",content:`Idée: "${idea}"`}],
+      `Expert en prompt engineering. Pose 2 questions courtes pour comprendre le CONTEXTE (qui il est, sa situation). JSON uniquement: {"questions":["q1","q2"]}. Français, court, direct.`
+    );
+    const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
+    state.questions=parsed.questions;
+    showPhase("questions"); renderQuestions();
+    sayText("Parfait ! "+parsed.questions.join(" Ensuite : "));
+  }catch(e){ showErr("errInput","Erreur IA : "+e.message); }
+  setLoading("btnStart",false,"Générer mon prompt parfait →");
+}
+
+async function submitAnswer(){
+  const ans = document.getElementById("answerInput").value.trim();
+  if(!ans) return;
+  state.allQA.push({step:STEPS[state.currentStep], q:state.questions[0], a:ans});
+  document.getElementById("answerInput").value="";
+  setLoading("btnNext",true); hideErr("errQ");
+  try{
+    const next = state.currentStep+1;
+    if(next < STEPS.length){
+      const ns=STEPS[next];
+      const ctx=state.allQA.map(qa=>`${qa.step}: ${qa.q} → ${qa.a}`).join("\n");
+      const text = await callClaude(
+        [{role:"user",content:`Idée: "${state.idea}"\n${ctx}`}],
+        `Expert prompt engineering. 2 questions pour le ${ns.toUpperCase()}.
+        ${ns==="objectif"?"OBJECTIF = résultat souhaité.":""}${ns==="format"?"FORMAT = longueur, structure, ton.":""}
+        JSON: {"questions":["q1","q2"]}`
+      );
+      const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
+      state.questions=parsed.questions; state.currentStep=next;
+      renderQuestions();
+      sayText(STEP_CONFIG[ns].desc+". "+parsed.questions.join(" Et : "));
+    } else {
+      const ctx=state.allQA.map(qa=>`[${qa.step.toUpperCase()}] ${qa.q} → ${qa.a}`).join("\n");
+      const text = await callClaude(
+        [{role:"user",content:`Idée: "${state.idea}"\n${ctx}\nGénère le prompt:`}],
+        `Expert prompt engineering. Génère le prompt PARFAIT pour ChatGPT/Claude (méthode COF). Directement utilisable, professionnel, détaillé. Commence par le prompt sans introduction. En français.`
+      );
+      document.getElementById("promptText").textContent=text;
+      showPhase("result");
+      sayText("Ton prompt parfait est prêt ! Copie-le et utilise-le.");
+    }
+  }catch(e){ showErr("errQ","Erreur IA : "+e.message); }
+  const isLast=state.currentStep===STEPS.length-1;
+  setLoading("btnNext",false,isLast?"Générer le prompt final ✨":"Continuer →");
+}
+
+// ── UI helpers ────────────────────────────────────
+function currentStepColor(){ return STEP_CONFIG[STEPS[state.currentStep]]?.color||"#FF6B35"; }
+
+function renderQuestions(){
+  const cfg=STEP_CONFIG[STEPS[state.currentStep]];
+  const badge=document.getElementById("stepBadge");
+  badge.textContent=cfg.label;
+  badge.style.cssText=`background:${cfg.color}22;color:${cfg.color};border-color:${cfg.color}44`;
+  document.getElementById("stepDesc").textContent=cfg.desc;
+  document.getElementById("qBox").innerHTML=state.questions.map((q,i)=>`
+    <div class="q-item">
+      <span class="q-num" style="color:${cfg.color}">${i+1}.</span>
+      <span class="q-text">${q}</span>
+      <button class="reread-btn" onclick="sayText('${q.replace(/'/g,"\\'")}')">▶</button>
+    </div>`).join("");
+  document.getElementById("micAnswer").setAttribute("onclick",`toggleMic('answerInput','micAnswer','${cfg.color}')`);
+  const btn=document.getElementById("btnNext");
+  btn.style.background=cfg.color;
+  btn.textContent=state.currentStep===STEPS.length-1?"Générer le prompt final ✨":"Continuer →";
+  updateDots();
+  setTimeout(()=>document.getElementById("answerInput").focus(),100);
+}
+
+function updateDots(){
+  STEPS.forEach((s,i)=>{
+    const cfg=STEP_CONFIG[s], dot=document.getElementById(`stepDot${i}`), lbl=document.getElementById(`stepLabel${i}`);
+    const done=i<state.currentStep, active=i===state.currentStep;
+    dot.textContent=done?"✓":i+1;
+    dot.style.cssText=done?`background:${cfg.color};border-color:${cfg.color};color:#000`
+      :active?`background:${cfg.color}33;border-color:${cfg.color};color:${cfg.color};box-shadow:0 0 14px ${cfg.color}55`
+      :`background:#1A1A2E;border-color:#333;color:#555`;
+    lbl.style.color=(active||done)?cfg.color:"#444";
+  });
+}
+
+function showPhase(p){
+  ["Input","Questions","Result"].forEach(x=>document.getElementById("phase"+x).classList.add("hidden"));
+  document.getElementById("phase"+p[0].toUpperCase()+p.slice(1)).classList.remove("hidden");
+  document.getElementById("stepBar").classList.toggle("hidden",p==="input");
+  if(p!=="input") updateDots();
+}
+
+function setLoading(id,on,label=""){
+  const b=document.getElementById(id);
+  b.disabled=on;
+  b.innerHTML=on?'<div class="spinner"></div> Chargement...':label||b.textContent;
+}
+function showErr(id,msg){ const e=document.getElementById(id); e.textContent=msg; e.classList.remove("hidden"); }
+function hideErr(id){ document.getElementById(id).classList.add("hidden"); }
+
+function copyPrompt(){
+  const text=document.getElementById("promptText").textContent;
+  const el=document.createElement("textarea");
+  el.value=text; el.style.cssText="position:fixed;opacity:0";
+  document.body.appendChild(el); el.focus(); el.select();
+  document.execCommand("copy"); document.body.removeChild(el);
+  const btn=document.getElementById("copyBtn");
+  btn.textContent="✓ Copié !"; btn.classList.add("copied");
+  setTimeout(()=>{ btn.textContent="Copier"; btn.classList.remove("copied"); },2000);
+}
+function readPrompt(){ sayText(document.getElementById("promptText").textContent); }
+
+function reset(){
+  window.speechSynthesis?.cancel();
+  state={idea:"",currentStep:0,questions:[],allQA:[],voiceEnabled:state.voiceEnabled,listening:{}};
+  document.getElementById("ideaInput").value="";
+  document.getElementById("answerInput").value="";
+  showPhase("input");
+  document.getElementById("btnStart").disabled=false;
+  document.getElementById("btnStart").textContent="Générer mon prompt parfait →";
+}
+
+if(window.speechSynthesis){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }
+</script>
+</body>
+</html>
