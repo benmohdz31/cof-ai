@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -25,9 +24,22 @@ export default async function handler(req, res) {
         messages,
       }),
     });
-    const data = await response.json();
+
+    const text = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      return res.status(500).json({ error: "Invalid response from Anthropic: " + text.slice(0, 200) });
+    }
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.error?.message || "Anthropic API error: " + response.status });
+    }
+
     return res.status(200).json(data);
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message || "Unknown error" });
   }
 }
